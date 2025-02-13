@@ -7,42 +7,50 @@
     <link rel="icon" type="image/png" href="fav.png">
     <title>EMAILO-GO</title>
     
-    <script type="module">
+  <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-  import { getAuth, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-        const firebaseConfig = {
-  apiKey: "AIzaSyCGTAGK-yyUouqizdAR70joSOUzbKqh8YU",
-  authDomain: "website-76482.firebaseapp.com",
-  databaseURL: "https://website-76482-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "website-76482",
-  storageBucket: "website-76482.firebasestorage.app",
-  messagingSenderId: "575948215112",
-  appId: "1:575948215112:web:ba6e5130966e1cd8f0197d"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGTAGK-yyUouqizdAR70joSOUzbKqh8YU",
+    authDomain: "website-76482.firebaseapp.com",
+    databaseURL: "https://website-76482-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "website-76482",
+    storageBucket: "website-76482.firebasestorage.app",
+    messagingSenderId: "575948215112",
+    appId: "1:575948215112:web:ba6e5130966e1cd8f0197d"
+  };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
 
-        // Google Sign-In
-        const googleSignInBtn = document.getElementById("googleSignInBtn");
+  // Check if user is already signed in
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // If the user is already authenticated, redirect to mail.html
+      window.location.href = 'mail.html';
+    }
+  });
 
-        googleSignInBtn.addEventListener("click", function() {
-            signInWithPopup(auth, googleProvider)
-                .then((result) => {
-                    const user = result.user;
-                    console.log("User signed in:", user);
-                    // Redirect to mail.html after successful login
-                    window.location.href = 'mail.html';
-                })
-                .catch((error) => {
-                    console.error("Error during Google sign-in:", error.message);
-                    alert("Something went wrong, please try again.");
-                });
-        });
-    </script>
+  // Google Sign-In
+  const googleSignInBtn = document.getElementById("googleSignInBtn");
+
+  googleSignInBtn.addEventListener("click", function() {
+    signInWithPopup(auth, googleProvider)
+      .then((result) => {
+        const user = result.user;
+        console.log("User signed in:", user);
+        // Redirect to mail.html after successful login
+        window.location.href = 'mail.html';
+      })
+      .catch((error) => {
+        console.error("Error during Google sign-in:", error.message);
+        alert("Something went wrong, please try again.");
+      });
+  });
+</script>
 </head>
 <body>
 
