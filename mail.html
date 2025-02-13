@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="fav.png">
+    <title>Submit Your Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2f;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2, h3 {
+            color: #ffcc00;
+        }
+
+        input, select {
+            width: 80%;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 2px solid #ff5733;
+            font-size: 16px;
+            background-color: #2e2e4a;
+            color: white;
+        }
+
+        select {
+            background-color: #ffcc00;
+            color: black;
+        }
+
+        button {
+            background-color: #ff5733;
+            color: white;
+            font-size: 18px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff3311;
+        }
+
+        #submittedDetails {
+            margin-top: 30px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #2e2e4a;
+            text-align: left;
+            display: inline-block;
+            width: 80%;
+        }
+
+        .alert {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: yellow;
+        }
+
+        .status-complete {
+            color: green;
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGTAGK-yyUouqizdAR70joSOUzbKqh8YU",
+            authDomain: "website-76482.firebaseapp.com",
+            databaseURL: "https://website-76482-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "website-76482",
+            storageBucket: "website-76482.firebasestorage.app",
+            messagingSenderId: "575948215112",
+            appId: "1:575948215112:web:ba6e5130966e1cd8f0197d"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Check if user is authenticated
+            onAuthStateChanged(auth, user => {
+                if (!user) {
+                    window.location.href = 'sign.html'; // Redirect to sign-up page if not logged in
+                } else {
+                    // User is authenticated, show the details form
+                    document.getElementById("submitBtn").addEventListener("click", function() {
+                        const name = document.getElementById("name").value.toLowerCase(); // Convert name to lowercase
+                        const domainName = document.getElementById("domainName").value.toLowerCase(); // Convert domain name to lowercase
+                        const domain = document.getElementById("domain").value;
+                        const password = document.getElementById("password").value;
+
+                        if (name === "" || domainName === "" || domain === "" || password === "") {
+                            alert("Please fill all the fields correctly!");
+                            return;
+                        }
+
+                        // Create email by combining domain name and selected domain template
+                        const email = name + "@" + domainName + "." + domain;
+
+                        const userRef = push(ref(db, "users"));
+
+                        set(userRef, {
+                            name: name,
+                            email: email,
+                            password: password,
+                            status: "Pending",
+                            uid: user.uid // Store the user's UID for reference
+                        }).then(() => {
+                            alert("Details submitted! Please wait...");
+                            document.getElementById("name").value = "";
+                            document.getElementById("domainName").value = "";
+                            document.getElementById("password").value = "";
+                            loadSubmittedData(user.uid);
+                        }).catch(error => {
+                            console.error("Error submitting data:", error);
+                            alert("Something went wrong, please try again!");
+                        });
+                    });
+                }
+            });
+
+            // Load Submitted Data for authenticated user
+            function loadSubmittedData(uid) {
+                const submittedDetails = document.getElementById("submittedDetails");
+                submittedDetails.innerHTML = "<h3>Your Submitted Data:</h3>";
+
+                onValue(ref(db, "users"), (snapshot) => {
+                    submittedDetails.innerHTML = "<h3>Your Submitted Data:</h3>";
+                    snapshot.forEach(childSnapshot => {
+                        const data = childSnapshot.val();
+                        if (data.uid === uid) { // Only show data for the authenticated user
+                            const statusClass = data.status === "Complete" ? "status-complete" : "status-pending";
+                            submittedDetails.innerHTML += `
+                                <p><b>Name:</b> ${data.name}</p>
+                                <p><b>Email:</b> ${data.email}</p>
+                                <p><b>Password:</b> ${data.password}</p>
+                                <p><b>Status:</b> <span class="${statusClass}">${data.status}</span></p>
+                                <hr>
+                            `;
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <h2>Submit Your Details</h2>
+
+    <input type="text" id="name" placeholder="Enter Your Name">
+    
+    <select id="domain">
+        <option value="work.gd">@domain.work.gd</option>
+        <option value="run.place">@domain.run.place</option>
+        <option value="publicvm.com">@domain.publicvm.com</option>
+        <option value="linkpc.net">@domain.linkpc.net</option>
+    </select>
+
+    <input type="text" id="domainName" placeholder="Enter Domain Name (e.g., mobe)">
+
+    <input type="password" id="password" placeholder="Enter a Strong Password">
+
+    <button id="submitBtn">Submit Details</button>
+
+    <div id="submittedDetails"></div>
+</body>
+</html>
